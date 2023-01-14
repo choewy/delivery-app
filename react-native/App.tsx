@@ -20,7 +20,12 @@ function HomeScreen({ navigation }: HomeScreenProps) {
   }, [navigation]);
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
       <TouchableHighlight onPress={onClick}>
         <Text>Home Screen</Text>
       </TouchableHighlight>
@@ -34,7 +39,12 @@ function DetailsScreen({ navigation }: DetailsScreenProps) {
   }, [navigation]);
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
       <TouchableHighlight onPress={onClick}>
         <Text>Details Screen</Text>
       </TouchableHighlight>
