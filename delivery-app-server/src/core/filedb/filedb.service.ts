@@ -99,6 +99,36 @@ export class FileDBService<R> implements OnApplicationBootstrap {
     );
   }
 
+  async deleteAndBy(option: Partial<R>): Promise<R> {
+    const [row, rows] = this.parseTable(this.table).reduce<[R | null, R[]]>(
+      (prev, row) => {
+        if (
+          !Object.entries(option).reduce<number>((match, [key, value]) => {
+            if (row[key] !== value) {
+              match = 0;
+            }
+
+            return match;
+          }, 1)
+        ) {
+          prev[1].push(row);
+        } else {
+          prev[0] = row;
+        }
+
+        return prev;
+      },
+      [null, []],
+    );
+
+    writeFileSync(
+      this.initializeTable(this.table),
+      JSON.stringify(rows, null, 2),
+    );
+
+    return row;
+  }
+
   async insert(row: Partial<R>): Promise<R> {
     row['id'] = this.increaseIndex();
 

@@ -1,5 +1,11 @@
-import { BcryptService, Public, User, UserEntity } from '@/core';
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import { BcryptService, Public, User, UserData } from '@/core';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInBody, SignOkResponse, SignUpBody } from './dtos';
 import { AlreadyExistEmailException } from './exceptions';
@@ -10,6 +16,11 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly bcryptService: BcryptService,
   ) {}
+
+  @Get()
+  async auth(@User() user: UserData): Promise<UserData> {
+    return user;
+  }
 
   @Public()
   @Post('signin')
@@ -41,7 +52,7 @@ export class AuthController {
   }
 
   @Post('signout')
-  async signOut(@User() user: UserEntity): Promise<void> {
-    console.log(user);
+  async signOut(@User() user: UserData): Promise<void> {
+    return this.authService.deleteSession(user.accessToken);
   }
 }

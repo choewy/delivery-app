@@ -1,7 +1,11 @@
 import { ConfigService } from '@nestjs/config';
 import { NestApplication } from '@nestjs/core';
-import { ConfigKey, ServerConfig } from './core';
-import { HttpJwtGuard } from './core/guards';
+import {
+  ConfigKey,
+  ServerConfig,
+  HttpJwtGuard,
+  HttpSessionGuard,
+} from './core';
 
 export class Bootstrap {
   private readonly configService: ConfigService;
@@ -9,7 +13,10 @@ export class Bootstrap {
   constructor(private readonly app: NestApplication) {
     this.configService = this.app.get(ConfigService);
 
-    this.app.useGlobalGuards(this.app.get(HttpJwtGuard));
+    this.app.useGlobalGuards(
+      this.app.get(HttpSessionGuard),
+      this.app.get(HttpJwtGuard),
+    );
   }
 
   async listen(): Promise<void> {

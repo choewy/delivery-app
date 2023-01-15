@@ -4,6 +4,7 @@ import {
   FileDBService,
   FileDBPRovideToken,
   UserEntity,
+  SessionEntity,
 } from '@/core';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -17,6 +18,8 @@ export class AuthService {
   constructor(
     @Inject(FileDBPRovideToken.User)
     private readonly userRepository: FileDBService<UserEntity>,
+    @Inject(FileDBPRovideToken.Session)
+    private readonly sessionRepository: FileDBService<SessionEntity>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
@@ -34,20 +37,35 @@ export class AuthService {
   }
 
   async issueTokens(user: UserEntity): Promise<SignOkResponse> {
-    const res = new SignOkResponse();
-
-    res.email = user.email;
-    res.name = user.name;
-    res.accessToken = this.jwtService.sign(
+    const accessToken = this.jwtService.sign(
       { id: user.id },
       { secret: this.JWT_SERCRET_KEY, expiresIn: '1d' },
     );
 
-    res.refreshTotken = this.jwtService.sign(
+    const refreshToken = this.jwtService.sign(
       {},
       { secret: this.JWT_SERCRET_KEY, expiresIn: '20d' },
     );
 
+    await this.sessionRepository.insert({
+      userId: user.id,
+      accessToken,
+      refreshToken,
+    });
+
+    const res = new SignOkResponse();
+
+    res.email = user.email;
+    res.name = user.name;
+    res.accessToken = accessToken;
+    res.refreshToken = refreshToken;
+
     return res;
+  }
+
+  async deleteSession(accessToken: string) {
+    await this.sessionRepository.deleteAndBy({
+      accessToken,
+    });
   }
 }

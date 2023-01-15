@@ -21,5 +21,5 @@ export class SignOkResponse {
   email: string;
   name: string;
   accessToken: string;
-  refreshTotken: string;
+  refreshToken: string;
 }

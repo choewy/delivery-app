@@ -2,8 +2,13 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { configs } from './config';
-import { FileDBService, UserRepositoryProvider } from './filedb';
-import { HttpJwtGuard } from './guards';
+import {
+  FileDBService,
+  OrderRepositoryProvider,
+  SessionRepositoryProvider,
+  UserRepositoryProvider,
+} from './filedb';
+import { HttpJwtGuard, HttpSessionGuard } from './guards';
 import { BcryptService } from './utils';
 
 @Global()
@@ -15,18 +20,25 @@ import { BcryptService } from './utils';
     }),
   ],
   providers: [
+    HttpSessionGuard,
     HttpJwtGuard,
+
     BcryptService,
     JwtService,
     FileDBService,
+    SessionRepositoryProvider,
     UserRepositoryProvider,
+    OrderRepositoryProvider,
   ],
   exports: [
+    HttpSessionGuard,
     HttpJwtGuard,
     BcryptService,
     JwtService,
     FileDBService,
+    SessionRepositoryProvider,
     UserRepositoryProvider,
+    OrderRepositoryProvider,
   ],
 })
 export class CoreModule {}

@@ -10,17 +10,16 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { ConfigKey, JwtConfig } from '../config';
-import { UserEntity } from '../entities';
+import { SessionEntity } from '../entities';
 import { FileDBService, FileDBPRovideToken } from '../filedb';
-import { JwtExpiredException } from './exceptions';
 
 @Injectable()
-export class HttpJwtGuard implements CanActivate {
+export class HttpSessionGuard implements CanActivate {
   private readonly JWT_SECRET_KEY: string | Buffer;
 
   constructor(
-    @Inject(FileDBPRovideToken.User)
-    private readonly userRepository: FileDBService<UserEntity>,
+    @Inject(FileDBPRovideToken.Session)
+    private readonly sessionRespository: FileDBService<SessionEntity>,
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -35,42 +34,49 @@ export class HttpJwtGuard implements CanActivate {
       return true;
     }
 
-    return this.checkAuthorization(context);
+    return this.checkRefreshToken(context);
   }
 
   async checkPublicRequest(context: ExecutionContext): Promise<boolean> {
     return this.reflector.get('public', context.getHandler()) === true;
   }
 
-  async checkAuthorization(context: ExecutionContext): Promise<boolean> {
+  async checkRefreshToken(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const accessToken = (request.headers.authorization || '').replace(
-      'Bearer ',
-      '',
-    );
+    const authorization = request.headers.authorization;
 
-    if (!accessToken) {
+    if (!authorization.startsWith('Refresh')) {
+      return true;
+    }
+
+    const refreshToken = authorization.replace('Refresh ', '');
+
+    if (!refreshToken) {
       throw new UnauthorizedException();
     }
 
     try {
-      const payload = this.jwtService.verify(accessToken, {
+      this.jwtService.verify(refreshToken, {
         secret: this.JWT_SECRET_KEY,
       });
-
-      request['user'] = await this.userRepository.findAndBy({
-        id: payload.id,
-      });
-
-      request['user'].accessToken = accessToken;
-      request['user'].refreshToken = request.headers.refresh;
-
-      return true;
     } catch (e) {
-      if (e.message === 'jwt expired') {
-        throw new JwtExpiredException();
-      }
+      await this.sessionRespository.deleteAndBy({ refreshToken });
       throw new UnauthorizedException();
     }
+
+    return this.checkSession(request, refreshToken);
+  }
+
+  async checkSession(request: Request, refreshToken: string): Promise<boolean> {
+    const session = await this.sessionRespository.findAndBy({ refreshToken });
+
+    if (!session) {
+      throw new UnauthorizedException();
+    }
+
+    request.headers.refresh = refreshToken;
+    request.headers.authorization = `Bearer ${session.accessToken}`;
+
+    return true;
   }
 }
