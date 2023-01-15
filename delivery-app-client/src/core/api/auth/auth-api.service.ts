@@ -10,6 +10,12 @@ export class AuthApiService extends ApiService {
   async signUp(body: SignUpBody): Promise<SignOkResponse> {
     return this.request.post('/auth/signup', body);
   }
+
+  async signOut(accessToken: string): Promise<void> {
+    return this.request.post('/auth/signout', undefined, {
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+  }
 }
 
 export const authApiService = new AuthApiService(new ConfigService());

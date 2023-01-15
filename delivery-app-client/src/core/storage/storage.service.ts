@@ -10,7 +10,7 @@ export class StorageService {
     );
   }
 
-  async removeTokens(): Promise<void> {
+  async removeRefreshToken(): Promise<void> {
     await EncryptedStorage.removeItem(this.REFRESH_TOKEN_KEY);
   }
 
