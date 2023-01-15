@@ -3,6 +3,12 @@ import { ApiService } from '../api.service';
 import { SignInBody, SignOkResponse, SignUpBody } from './types';
 
 export class AuthApiService extends ApiService {
+  async auth(refreshToken: string): Promise<SignOkResponse> {
+    return this.request.get('/auth', {
+      headers: { authorization: `Refresh ${refreshToken}` },
+    });
+  }
+
   async signIn(body: SignInBody): Promise<SignOkResponse> {
     return this.request.post('/auth/signin', body);
   }

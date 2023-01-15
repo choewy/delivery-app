@@ -32,7 +32,7 @@ export const SignUpScreen: FC<RootScreenProps<RootScreenName.SignUp>> = ({
       {signUpComponent.password({
         value: password,
         onChangeText: onChangePassword,
-        onSubmitEditing: onSignIn,
+        onSubmitEditing: onSignUp,
       })}
       {signUpComponent.buttons({
         email,

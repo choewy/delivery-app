@@ -7,7 +7,7 @@ export class SocketService {
 
   constructor(private readonly configService: ConfigService) {}
 
-  useSocket(signed: boolean): Socket | undefined {
+  useSocketConnect(signed: boolean): void {
     if (!this.socket && signed) {
       this.socket = SocketIoClient(this.configService.WS_URL, {
         transports: ['websocket'],
@@ -23,10 +23,12 @@ export class SocketService {
     }, [signed]);
 
     useEffect(() => {
-      disconnect();
+      if (this.socket) {
+        () => {
+          disconnect();
+        };
+      }
     }, [disconnect]);
-
-    return this.socket;
   }
 }
 

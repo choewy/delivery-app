@@ -7,9 +7,11 @@ import { socketService } from '@/core';
 
 export const Screens: FC = () => {
   appStore.useHealthCheck();
+  appStore.useAuthEffect();
 
   const signed = appStore.useSigned();
-  const socket = socketService.useSocket(signed);
+
+  socketService.useSocketConnect(signed);
 
   return (
     <Fragment>
