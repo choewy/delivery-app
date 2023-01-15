@@ -1,8 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { configs } from './config';
-import { FileDBService } from './filedb';
+import { FileDBService, UserRepositoryProvider } from './filedb';
+import { HttpJwtGuard } from './guards';
 import { BcryptService } from './utils';
 
 @Global()
@@ -12,11 +13,20 @@ import { BcryptService } from './utils';
       load: configs,
       isGlobal: true,
     }),
-    JwtModule.register({
-      secret: 'DEILIVERY_APP_SECRET',
-    }),
   ],
-  providers: [BcryptService, JwtService, FileDBService],
-  exports: [BcryptService, JwtService, FileDBService],
+  providers: [
+    HttpJwtGuard,
+    BcryptService,
+    JwtService,
+    FileDBService,
+    UserRepositoryProvider,
+  ],
+  exports: [
+    HttpJwtGuard,
+    BcryptService,
+    JwtService,
+    FileDBService,
+    UserRepositoryProvider,
+  ],
 })
 export class CoreModule {}
