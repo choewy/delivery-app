@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import SocketIoClient, { Socket } from 'socket.io-client';
 import { ConfigService } from '../config';
 
@@ -15,20 +15,12 @@ export class SocketService {
       this.socket.connect();
     }
 
-    const disconnect = useCallback(() => {
+    useEffect(() => {
       if (this.socket && !signed) {
         this.socket.disconnect();
         this.socket = undefined;
       }
     }, [signed]);
-
-    useEffect(() => {
-      if (this.socket) {
-        () => {
-          disconnect();
-        };
-      }
-    }, [disconnect]);
   }
 }
 
