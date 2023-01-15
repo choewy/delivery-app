@@ -1,3 +1,5 @@
+import { authApiService, storageService } from '@/core';
+import { appStore } from '@/store';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Dispatch, SetStateAction, useCallback } from 'react';
 import { Alert } from 'react-native';
@@ -15,6 +17,8 @@ export class SignUpHooks {
   }
 
   useSubmitEvent(email: string, password: string, name: string) {
+    const setAuth = appStore.useSetAuth();
+
     return useCallback(async () => {
       if (!email || !email.trim()) {
         return Alert.alert('알림', '이메일을 입력하세요.');
@@ -28,8 +32,16 @@ export class SignUpHooks {
         return Alert.alert('알림', '이름을 입력하세요.');
       }
 
-      Alert.alert('알림', '회원가입 되었습니다.');
-    }, [email, password, name]);
+      try {
+        const signOk = await authApiService.signUp({ email, password, name });
+        await storageService.setToken(signOk.refreshToken);
+        setAuth(signOk);
+        Alert.alert('알림', '회원가입 되었습니다.');
+      } catch (e) {
+        const error = e as any;
+        Alert.alert(error.message);
+      }
+    }, [email, password, name, setAuth]);
   }
 
   useToSignInEvent(
@@ -40,7 +52,7 @@ export class SignUpHooks {
     >,
   ) {
     return useCallback(() => {
-      navigation.navigate(RootScreenName.SignUp);
+      navigation.navigate(RootScreenName.SignIn);
     }, [navigation]);
   }
 }
