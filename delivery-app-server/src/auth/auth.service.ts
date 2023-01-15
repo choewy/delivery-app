@@ -1,17 +1,29 @@
-import { FileDBService } from '@/core';
-import { UserEntity } from '@/core/entities/user.entity';
-import { FileDBPRovideToken } from '@/core/filedb/enums';
+import {
+  ConfigKey,
+  JwtConfig,
+  FileDBService,
+  FileDBPRovideToken,
+  UserEntity,
+} from '@/core';
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { SignOkResponse, SignUpBody } from './dtos';
 
 @Injectable()
 export class AuthService {
+  private readonly JWT_SERCRET_KEY: string | Buffer;
+
   constructor(
     @Inject(FileDBPRovideToken.User)
     private readonly userRepository: FileDBService<UserEntity>,
     private readonly jwtService: JwtService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.JWT_SERCRET_KEY = this.configService.get<JwtConfig>(
+      ConfigKey.Jwt,
+    ).secret;
+  }
 
   async findByEmail(email: string): Promise<UserEntity> {
     return this.userRepository.findAndBy({ email });
@@ -28,12 +40,12 @@ export class AuthService {
     res.name = user.name;
     res.accessToken = this.jwtService.sign(
       { id: user.id },
-      { secret: 'DEILIVERY_APP_SECRET', expiresIn: '1d' },
+      { secret: this.JWT_SERCRET_KEY, expiresIn: '1d' },
     );
 
     res.refreshTotken = this.jwtService.sign(
       {},
-      { secret: 'DEILIVERY_APP_SECRET', expiresIn: '20d' },
+      { secret: this.JWT_SERCRET_KEY, expiresIn: '20d' },
     );
 
     return res;

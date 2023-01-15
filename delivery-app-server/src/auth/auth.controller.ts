@@ -1,4 +1,4 @@
-import { BcryptService } from '@/core';
+import { BcryptService, Public, User, UserEntity } from '@/core';
 import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInBody, SignOkResponse, SignUpBody } from './dtos';
@@ -11,6 +11,7 @@ export class AuthController {
     private readonly bcryptService: BcryptService,
   ) {}
 
+  @Public()
   @Post('signin')
   async signIn(@Body() body: SignInBody): Promise<SignOkResponse> {
     const user = await this.authService.findByEmail(body.email);
@@ -26,6 +27,7 @@ export class AuthController {
     return this.authService.issueTokens(user);
   }
 
+  @Public()
   @Post('signup')
   async signUp(@Body() body: SignUpBody): Promise<SignOkResponse> {
     if (await this.authService.findByEmail(body.email)) {
@@ -36,5 +38,10 @@ export class AuthController {
 
     const user = await this.authService.insertUser(body);
     return this.authService.issueTokens(user);
+  }
+
+  @Post('signout')
+  async signOut(@User() user: UserEntity): Promise<void> {
+    console.log(user);
   }
 }
