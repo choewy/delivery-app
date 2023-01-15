@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { configs } from './config';
 import {
@@ -18,11 +19,12 @@ import { BcryptService } from './utils';
       load: configs,
       isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
   ],
   providers: [
+    EventEmitter2,
     HttpSessionGuard,
     HttpJwtGuard,
-
     BcryptService,
     JwtService,
     FileDBService,
@@ -31,6 +33,7 @@ import { BcryptService } from './utils';
     OrderRepositoryProvider,
   ],
   exports: [
+    EventEmitter2,
     HttpSessionGuard,
     HttpJwtGuard,
     BcryptService,

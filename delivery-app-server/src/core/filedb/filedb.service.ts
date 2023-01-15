@@ -2,7 +2,9 @@ import { OnApplicationBootstrap } from '@nestjs/common';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { FileDBTable } from './types';
 
-export class FileDBService<R> implements OnApplicationBootstrap {
+export class FileDBService<R extends { id: number }>
+  implements OnApplicationBootstrap
+{
   private readonly DB_PATH = './db';
 
   constructor(private readonly table: FileDBTable) {}
@@ -138,5 +140,25 @@ export class FileDBService<R> implements OnApplicationBootstrap {
     );
 
     return row as R;
+  }
+
+  async update(option: Partial<R>, data: Partial<R>): Promise<R> {
+    const row = Object.assign<R, Partial<R>>(
+      await this.findAndBy(option),
+      data,
+    );
+
+    writeFileSync(
+      this.initializeTable(this.table),
+      JSON.stringify(
+        this.parseTable(this.table).map((old) =>
+          old.id === row.id ? row : old,
+        ),
+        null,
+        2,
+      ),
+    );
+
+    return row;
   }
 }
