@@ -12,6 +12,7 @@ export class SocketService {
       this.socket = SocketIoClient(this.configService.WS_URL, {
         transports: ['websocket'],
       });
+      this.socket.connect();
     }
 
     const disconnect = useCallback(() => {
